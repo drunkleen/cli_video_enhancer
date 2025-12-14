@@ -10,8 +10,8 @@ By default (no enhancement flags and `--speed 1.0`) it **stream-copies** video &
 
 ## Requirements
 
-* FFmpeg & FFprobe in `PATH`
-* Rust (edition 2021)
+* FFmpeg & FFprobe in `PATH` (or pass `--ffmpeg` / `--ffprobe` to point to binaries)
+* Rust (edition 2024)
 
 ## Build
 
@@ -33,6 +33,9 @@ video_enhancer -i in.mp4 --brightness 60 --contrast 60 --saturation 55 -o out_po
 
 # Detail control
 video_enhancer -i in.mp4 --sharpen 75 --denoise 70 -o out_clean_sharp.mp4
+
+# Custom ffmpeg/ffprobe paths (Windows or Linux)
+video_enhancer -i in.mp4 --ffmpeg "C:\\ffmpeg\\bin\\ffmpeg.exe" --ffprobe "C:\\ffmpeg\\bin\\ffprobe.exe"
 ```
 
 ## Flags (selected)
@@ -41,7 +44,9 @@ video_enhancer -i in.mp4 --sharpen 75 --denoise 70 -o out_clean_sharp.mp4
 * `-o, --output <FILE>` (default: `<input>_enhanced_speed<S>.mp4`)
 * `-s, --speed <FLOAT>` (default: `1.0`)
 * `--brightness/--contrast/--saturation/--sharpen/--denoise <0..100>` (50 = unchanged)
-* `--crf <INT>` (default: `17`) & `--preset <STRING>` (default: `slow`) — used only when video is re-encoded
+* `--crf <INT>` (default: `17`) & `--preset <STRING>` (default: `slow`) - used only when video is re-encoded
+* `--threads <INT>` (default: `0` for ffmpeg auto/max)
+* `--ffmpeg <PATH>` / `--ffprobe <PATH>` to override PATH lookup
 * `--verbose`
 
 ## Tests
