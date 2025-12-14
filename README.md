@@ -5,8 +5,9 @@ By default (no enhancement flags and `--speed 1.0`) it **stream-copies** video &
 
 ## Features
 
-* 0–100 controls (50 = unchanged): `--brightness`, `--contrast`, `--saturation`, `--sharpen`, `--denoise`
+* 0-100 controls (50 = unchanged): `--brightness`, `--contrast`, `--saturation`, `--sharpen`, `--denoise`
 * Speed control: `-s/--speed` (e.g., `1.25`, `0.75`)
+* Interactive terminal UI when launched without flags
 
 ## Requirements
 
@@ -33,6 +34,9 @@ video_enhancer -i in.mp4 --brightness 60 --contrast 60 --saturation 55 -o out_po
 
 # Detail control
 video_enhancer -i in.mp4 --sharpen 75 --denoise 70 -o out_clean_sharp.mp4
+
+# Interactive TUI (just run without flags)
+video_enhancer
 
 # Custom ffmpeg/ffprobe paths (Windows or Linux)
 video_enhancer -i in.mp4 --ffmpeg "C:\\ffmpeg\\bin\\ffmpeg.exe" --ffprobe "C:\\ffmpeg\\bin\\ffprobe.exe"

@@ -2,6 +2,7 @@ mod cli;
 mod ffmpeg;
 mod filters;
 mod progress;
+mod tui;
 
 use crate::cli::Cli;
 use crate::filters::{build_audio_filters, build_video_filters};
@@ -9,12 +10,16 @@ use anyhow::Result;
 use clap::Parser;
 
 fn main() -> Result<()> {
-    let cli = Cli::parse();
-    let config = cli.into_config()?;
+    let config = if std::env::args_os().len() > 1 {
+        let cli = Cli::parse();
+        cli.into_config()?
+    } else {
+        tui::interactive_config()?
+    };
     let tools = ffmpeg::resolve_tools(config.ffmpeg.clone(), config.ffprobe.clone())?;
 
     let duration = ffmpeg::probe_duration_seconds(&tools, &config.input)?;
-    let total_ms = cli::target_duration_ms(duration, config.speed);
+    let total_ms = crate::cli::target_duration_ms(duration, config.speed);
 
     let video_filters = build_video_filters(
         config.speed,
