@@ -45,6 +45,7 @@ pub fn interactive_config() -> Result<AppConfig> {
     };
 
     let denoise = prompt_optional_pct(&theme, "Denoise (0-100, blank=skip)")?;
+    let scale_height = prompt_optional_scale(&theme)?;
     let sharpen = prompt_optional_pct(&theme, "Sharpen (0-100, blank=skip)")?;
     let contrast = prompt_optional_pct(&theme, "Contrast (0-100, blank=skip)")?;
     let saturation = prompt_optional_pct(&theme, "Saturation (0-100, blank=skip)")?;
@@ -79,6 +80,7 @@ pub fn interactive_config() -> Result<AppConfig> {
         crf,
         preset,
         denoise,
+        scale: scale_height,
         sharpen,
         contrast,
         saturation,
@@ -124,6 +126,23 @@ fn prompt_optional_path(theme: &ColorfulTheme, prompt: &str) -> Result<Option<Pa
             return Ok(Some(path));
         } else {
             println!("Path not found. Leave blank to skip or enter a valid file path.");
+        }
+    }
+}
+
+fn prompt_optional_scale(theme: &ColorfulTheme) -> Result<Option<u32>> {
+    loop {
+        let raw: String = Input::with_theme(theme)
+            .with_prompt("Output height (e.g., 720 or 480; blank=keep source)")
+            .allow_empty(true)
+            .interact_text()?;
+        let trimmed = raw.trim();
+        if trimmed.is_empty() {
+            return Ok(None);
+        }
+        match crate::filters::validate_scale_height(trimmed) {
+            Ok(h) => return Ok(Some(h)),
+            Err(err) => println!("{err}. Please enter an even integer or leave blank."),
         }
     }
 }

@@ -7,6 +7,7 @@ By default (no enhancement flags and `--speed 1.0`) it **stream-copies** video &
 
 * 0-100 controls (50 = unchanged): `--brightness`, `--contrast`, `--saturation`, `--sharpen`, `--denoise`
 * Speed control: `-s/--speed` (e.g., `1.25`, `0.75`)
+* Optional scaling by height (keeps aspect), e.g., `--scale 720`
 * Interactive terminal UI when launched without flags
 
 ## Requirements
@@ -35,6 +36,9 @@ video_enhancer -i in.mp4 --brightness 60 --contrast 60 --saturation 55 -o out_po
 # Detail control
 video_enhancer -i in.mp4 --sharpen 75 --denoise 70 -o out_clean_sharp.mp4
 
+# Scale to 720p while adjusting speed
+video_enhancer -i in.mp4 --scale 720 -s 1.25 -o out_720_fast.mp4
+
 # Interactive TUI (just run without flags)
 video_enhancer
 
@@ -48,6 +52,7 @@ video_enhancer -i in.mp4 --ffmpeg "C:\\ffmpeg\\bin\\ffmpeg.exe" --ffprobe "C:\\f
 * `-o, --output <FILE>` (default: `<input>_enhanced_speed<S>.mp4`)
 * `-s, --speed <FLOAT>` (default: `1.0`)
 * `--brightness/--contrast/--saturation/--sharpen/--denoise <0..100>` (50 = unchanged)
+* `--scale <HEIGHT>` (even integer; width auto to keep aspect)
 * `--crf <INT>` (default: `17`) & `--preset <STRING>` (default: `slow`) - used only when video is re-encoded
 * `--threads <INT>` (default: `0` for ffmpeg auto/max)
 * `--ffmpeg <PATH>` / `--ffprobe <PATH>` to override PATH lookup

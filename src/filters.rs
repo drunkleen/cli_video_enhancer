@@ -5,6 +5,16 @@ pub const SHARP_MAX: f64 = 1.0;
 pub const DENOISE_LUMA_MAX: f64 = 1.8;
 pub const DENOISE_TEMP_MAX: f64 = 9.0;
 
+pub fn validate_scale_height(raw: &str) -> Result<u32, String> {
+    let parsed: u32 = raw
+        .parse()
+        .map_err(|_| format!("`{raw}` must be a positive even integer"))?;
+    if parsed == 0 || parsed % 2 != 0 {
+        return Err("scale height must be a positive even integer (e.g., 720, 480)".into());
+    }
+    Ok(parsed)
+}
+
 pub fn validate_percent_range(raw: &str) -> Result<u8, String> {
     let parsed: u8 = raw
         .parse()
@@ -23,6 +33,7 @@ pub fn pct_center_norm(pct: u8) -> f64 {
 pub fn build_video_filters(
     speed: f64,
     denoise: Option<u8>,
+    scale_height: Option<u32>,
     sharpen: Option<u8>,
     contrast: Option<u8>,
     saturation: Option<u8>,
@@ -81,6 +92,10 @@ pub fn build_video_filters(
         ));
     }
 
+    if let Some(h) = scale_height {
+        parts.push(format!("scale=-2:{h}"));
+    }
+
     if (speed - 1.0).abs() > 0.000_5 {
         parts.push(format!("setpts=PTS/{speed}"));
     }
@@ -128,25 +143,25 @@ mod tests {
 
     #[test]
     fn test_build_video_filters_defaults_empty() {
-        let f = build_video_filters(1.0, None, None, None, None, None);
+        let f = build_video_filters(1.0, None, None, None, None, None, None);
         assert!(f.is_empty(), "expected empty filters, got: {}", f);
     }
 
     #[test]
     fn test_build_video_filters_speed_only() {
-        let f = build_video_filters(1.25, None, None, None, None, None);
+        let f = build_video_filters(1.25, None, None, None, None, None, None);
         assert_eq!(f, "setpts=PTS/1.25");
     }
 
     #[test]
     fn test_brightness_mapping() {
-        let f = build_video_filters(1.0, None, None, None, None, Some(50));
+        let f = build_video_filters(1.0, None, None, None, None, None, Some(50));
         assert!(f.is_empty(), "brightness 50 should be identity, got: {f}");
 
-        let f = build_video_filters(1.0, None, None, None, None, Some(100));
+        let f = build_video_filters(1.0, None, None, None, None, None, Some(100));
         assert!(f.contains(&format!("brightness={:.6}", BRIGHTNESS_MAX)));
 
-        let f = build_video_filters(1.0, None, None, None, None, Some(0));
+        let f = build_video_filters(1.0, None, None, None, None, None, Some(0));
         assert!(f.contains(&format!("brightness={:.6}", -BRIGHTNESS_MAX)));
     }
 
@@ -154,7 +169,7 @@ mod tests {
     fn test_contrast_saturation_mapping() {
         let c_mult = 1.0 + 0.5 * CONTRAST_SPAN;
         let s_mult = 1.0 + 0.5 * SAT_SPAN;
-        let f = build_video_filters(1.0, None, None, Some(75), Some(75), None);
+        let f = build_video_filters(1.0, None, None, None, Some(75), Some(75), None);
         assert!(f.contains(&format!("contrast={:.6}", c_mult)));
         assert!(f.contains(&format!("saturation={:.6}", s_mult)));
     }
@@ -162,24 +177,30 @@ mod tests {
     #[test]
     fn test_sharpen_mapping() {
         let amt = 0.5 * SHARP_MAX;
-        let f = build_video_filters(1.0, None, Some(75), None, None, None);
+        let f = build_video_filters(1.0, None, None, Some(75), None, None, None);
         assert!(f.contains(&format!("luma_amount={:.3}", amt)));
 
         let amt_neg = -0.5 * SHARP_MAX;
-        let f2 = build_video_filters(1.0, None, Some(25), None, None, None);
+        let f2 = build_video_filters(1.0, None, None, Some(25), None, None, None);
         assert!(f2.contains(&format!("luma_amount={:.3}", amt_neg)));
     }
 
     #[test]
     fn test_denoise_mapping() {
-        let f = build_video_filters(1.0, Some(50), None, None, None, None);
+        let f = build_video_filters(1.0, Some(50), None, None, None, None, None);
         assert!(f.is_empty() || !f.contains("hqdn3d"));
 
-        let f2 = build_video_filters(1.0, Some(100), None, None, None, None);
+        let f2 = build_video_filters(1.0, Some(100), None, None, None, None, None);
         assert!(f2.contains(&format!(
             "hqdn3d={:.3}:{:.3}:{:.3}:{:.3}",
             DENOISE_LUMA_MAX, DENOISE_LUMA_MAX, DENOISE_TEMP_MAX, DENOISE_TEMP_MAX
         )));
+    }
+
+    #[test]
+    fn test_scale_filter_added() {
+        let f = build_video_filters(1.0, None, Some(720), None, None, None, None);
+        assert!(f.contains("scale=-2:720"));
     }
 
     #[test]

@@ -24,6 +24,7 @@ fn main() -> Result<()> {
     let video_filters = build_video_filters(
         config.speed,
         config.denoise,
+        config.scale,
         config.sharpen,
         config.contrast,
         config.saturation,

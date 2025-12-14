@@ -1,4 +1,4 @@
-use crate::filters::validate_percent_range;
+use crate::filters::{validate_percent_range, validate_scale_height};
 use anyhow::{bail, Result};
 use clap::{ArgAction, Parser, ValueHint};
 use std::ffi::OsStr;
@@ -34,6 +34,10 @@ pub struct Cli {
     /// Denoise 0..100 (50 = unchanged; <=50 off; >50 more denoise)
     #[arg(long, value_parser = validate_percent_range)]
     pub denoise: Option<u8>,
+
+    /// Output height (e.g., 720, 480). Width auto-calculated to keep aspect. Must be even.
+    #[arg(long, value_parser = validate_scale_height)]
+    pub scale: Option<u32>,
 
     /// Sharpen 0..100 (50 = unchanged; <50 blur; >50 sharpen)
     #[arg(long, value_parser = validate_percent_range)]
@@ -76,6 +80,7 @@ pub struct AppConfig {
     pub crf: u8,
     pub preset: String,
     pub denoise: Option<u8>,
+    pub scale: Option<u32>,
     pub sharpen: Option<u8>,
     pub contrast: Option<u8>,
     pub saturation: Option<u8>,
@@ -106,6 +111,7 @@ impl Cli {
             crf: self.crf,
             preset: self.preset,
             denoise: self.denoise,
+            scale: self.scale,
             sharpen: self.sharpen,
             contrast: self.contrast,
             saturation: self.saturation,
